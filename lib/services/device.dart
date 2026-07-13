@@ -2,17 +2,22 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-enum ConnectionStatus { connecting, connected, error }
+enum DeviceStatus { connecting, connected, error }
 
 class DeviceService {
+  final StreamController<DeviceStatus> _statusController =
+      StreamController<DeviceStatus>.broadcast();
+  final StreamController<Uint8List> _frameController =
+      StreamController<Uint8List>.broadcast();
+
+  Stream<DeviceStatus> get statusStream => _statusController.stream;
+  Stream<Uint8List> get frameStream => _frameController.stream;
+
   final String host;
   final int port;
   final int frameWidth;
   final int frameHeight;
   late final int bytesPerFrame;
-
-  final void Function(ConnectionStatus) onStatusChanged;
-  final void Function(Uint8List) onFrameReceived;
 
   Socket? _socket;
   Timer? _reconnectTimer;
@@ -20,17 +25,15 @@ class DeviceService {
   final List<int> _pendingBytes = <int>[];
   late final Uint8List _latestFrameBytes;
 
-  ConnectionStatus _status = ConnectionStatus.connecting;
+  DeviceStatus _status = DeviceStatus.connecting;
 
-  ConnectionStatus get status => _status;
+  DeviceStatus get status => _status;
 
   DeviceService({
     required this.frameWidth,
     required this.frameHeight,
     required this.host,
     required this.port,
-    required this.onStatusChanged,
-    required this.onFrameReceived,
   }) {
     bytesPerFrame = frameWidth * frameHeight * 3;
     _latestFrameBytes = Uint8List(frameWidth * frameHeight * 4);
@@ -40,7 +43,9 @@ class DeviceService {
   Future<void> _nextFrame() async {
     _reconnectTimer?.cancel();
 
-    _updateStatus(ConnectionStatus.connecting);
+    if (_status == DeviceStatus.connected) {
+      _updateStatus(DeviceStatus.connecting);
+    }
 
     try {
       _socket?.destroy();
@@ -50,7 +55,7 @@ class DeviceService {
         timeout: const Duration(seconds: 3),
       );
 
-      _updateStatus(ConnectionStatus.connected);
+      _updateStatus(DeviceStatus.connected);
 
       _socket!.listen(
         _handleSocketData,
@@ -59,7 +64,7 @@ class DeviceService {
         cancelOnError: true,
       );
     } catch (error) {
-      _updateStatus(ConnectionStatus.error);
+      _updateStatus(DeviceStatus.error);
       _scheduleReconnect();
     }
   }
@@ -78,7 +83,7 @@ class DeviceService {
     _socket?.destroy();
     _socket = null;
 
-    _updateStatus(ConnectionStatus.error);
+    _updateStatus(DeviceStatus.error);
     _scheduleReconnect();
   }
 
@@ -108,12 +113,12 @@ class DeviceService {
       rgbaFrame[rgbaIndex++] = 255;
     }
 
-    onFrameReceived(rgbaFrame);
+    _frameController.add(rgbaFrame);
   }
 
-  void _updateStatus(ConnectionStatus status) {
+  void _updateStatus(DeviceStatus status) {
     _status = status;
-    onStatusChanged(status);
+    _statusController.add(status);
   }
 
   void dispose() {

@@ -3,53 +3,42 @@ import 'package:uti_thermal_app/services/device.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-const host = '192.168.16.10';
-const port = 9527;
-
 class LiveImageCanvas extends StatefulWidget {
-  const LiveImageCanvas({super.key});
+  final DeviceService deviceService;
+
+  const LiveImageCanvas({super.key, required this.deviceService});
 
   @override
-  State<LiveImageCanvas> createState() => _LiveImageCanvasState();
+  State<LiveImageCanvas> createState() =>
+      _LiveImageCanvasState(deviceService: deviceService);
 }
 
 class _LiveImageCanvasState extends State<LiveImageCanvas> {
-  DeviceService? _deviceService;
-
-  late final int _frameWidth = 400;
-  late final int _frameHeight = 300;
+  final DeviceService deviceService;
 
   ui.Image? _latestFrame;
+
+  _LiveImageCanvasState({required this.deviceService});
 
   @override
   void initState() {
     super.initState();
 
-    _deviceService = DeviceService(
-      host: host,
-      port: port,
-      frameWidth: _frameWidth,
-      frameHeight: _frameHeight,
-      onStatusChanged: (status) {
-        if (!mounted) return;
-      },
-      onFrameReceived: (frameBytes) {
-        _decodeAndPublishFrame(frameBytes);
-      },
-    );
+    deviceService.frameStream.listen((Uint8List rgbaFrame) {
+      _decodeAndPublishFrame(rgbaFrame);
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    _deviceService!.dispose();
   }
 
   void _decodeAndPublishFrame(Uint8List rgbaFrame) {
     ui.decodeImageFromPixels(
       rgbaFrame,
-      _frameWidth,
-      _frameHeight,
+      deviceService.frameWidth,
+      deviceService.frameHeight,
       ui.PixelFormat.rgba8888,
       (ui.Image image) {
         if (!mounted) {
@@ -71,7 +60,7 @@ class _LiveImageCanvasState extends State<LiveImageCanvas> {
       mainAxisSize: MainAxisSize.min,
       children: [
         AspectRatio(
-          aspectRatio: _frameWidth / _frameHeight,
+          aspectRatio: deviceService.frameWidth / deviceService.frameHeight,
           child: CustomPaint(
             painter: _LiveImagePainter(image: _latestFrame),
             child: const SizedBox.expand(),
@@ -99,6 +88,7 @@ class _LiveImagePainter extends CustomPainter {
         image!.width.toDouble(),
         image!.height.toDouble(),
       );
+
       final destinationRect = Offset.zero & size;
       canvas.drawImageRect(image!, sourceRect, destinationRect, Paint());
     }
