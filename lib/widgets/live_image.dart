@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uti_thermal_app/services/device.dart';
+import 'package:better_thermal/services/device.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 

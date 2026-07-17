@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "uti_thermal_app" "\0"
+            VALUE "FileDescription", "better_thermal" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "uti_thermal_app" "\0"
+            VALUE "InternalName", "better_thermal" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "uti_thermal_app.exe" "\0"
-            VALUE "ProductName", "uti_thermal_app" "\0"
+            VALUE "OriginalFilename", "better_thermal.exe" "\0"
+            VALUE "ProductName", "better_thermal" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

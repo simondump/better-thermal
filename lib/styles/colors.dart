@@ -55,7 +55,7 @@ class AppColors {
     onWarning: Color(0xFF000000),
     danger: Color(0xFFEF5350),
     onDanger: Color(0xFFFFFFFF),
-    background: Color(0xFF101014),
+    background: Color(0xFF0F0F11),
     onBackground: Color(0xFFFFFFFF),
   );
 }

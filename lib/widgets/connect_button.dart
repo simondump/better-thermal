@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uti_thermal_app/services/device.dart';
-import 'package:uti_thermal_app/styles/themes.dart';
+import 'package:better_thermal/services/device.dart';
+import 'package:better_thermal/styles/themes.dart';
 
 class _ButtonConfig {
   final String text;
@@ -18,15 +18,17 @@ class _ButtonConfig {
 
 class ConnectButton extends StatelessWidget {
   final DeviceService deviceService;
-  final VoidCallback onPressed;
 
-  const ConnectButton({
-    super.key,
-    required this.deviceService,
-    required this.onPressed,
-  });
+  const ConnectButton({super.key, required this.deviceService});
 
   Map<DeviceStatus, _ButtonConfig> _getConfigMap(BuildContext context) {
+    final base = _ButtonConfig(
+      text: 'Connect to device',
+      icon: Icons.wifi,
+      backgroundColor: context.theme.colors.success,
+      foregroundColor: context.theme.colors.onSuccess,
+    );
+
     return {
       DeviceStatus.connecting: _ButtonConfig(
         text: 'Connecting...',
@@ -40,19 +42,22 @@ class ConnectButton extends StatelessWidget {
         backgroundColor: context.theme.colors.danger,
         foregroundColor: context.theme.colors.onSuccess,
       ),
-      DeviceStatus.disconnected: _ButtonConfig(
-        text: 'Connect to device',
-        icon: Icons.wifi,
-        backgroundColor: context.theme.colors.success,
-        foregroundColor: context.theme.colors.onSuccess,
-      ),
-      DeviceStatus.error: _ButtonConfig(
-        text: 'Error, retry connecting?',
-        icon: Icons.error,
-        backgroundColor: context.theme.colors.success,
-        foregroundColor: context.theme.colors.onDanger,
-      ),
+      DeviceStatus.disconnected: base,
+      DeviceStatus.error: base,
     };
+  }
+
+  void _toggleConnection() {
+    if (deviceService.status == DeviceStatus.connecting) {
+      return;
+    }
+
+    if (deviceService.status == DeviceStatus.error ||
+        deviceService.status == DeviceStatus.disconnected) {
+      deviceService.connect();
+    } else {
+      deviceService.disconnect();
+    }
   }
 
   @override
@@ -63,12 +68,13 @@ class ConnectButton extends StatelessWidget {
       builder: (context, snapshot) {
         final status = snapshot.data ?? DeviceStatus.disconnected;
         final config = _getConfigMap(context)[status]!;
+
         return ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
             backgroundColor: config.backgroundColor,
             foregroundColor: config.foregroundColor,
           ),
-          onPressed: onPressed,
+          onPressed: _toggleConnection,
           label: Text(config.text),
           icon: Icon(config.icon),
         );

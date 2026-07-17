@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uti_thermal_app/services/device.dart';
-import 'package:uti_thermal_app/styles/themes.dart';
+import 'package:better_thermal/services/device.dart';
+import 'package:better_thermal/styles/themes.dart';
 
 class FpsText extends StatefulWidget {
   final DeviceService deviceService;

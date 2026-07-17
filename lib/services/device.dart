@@ -49,7 +49,9 @@ class DeviceService {
   }
 
   void connect() {
-    if (_status != DeviceStatus.connected) {
+    if (_status != DeviceStatus.connected &&
+        _status != DeviceStatus.connecting) {
+      _updateStatus(DeviceStatus.connecting);
       _nextFrame();
     }
   }

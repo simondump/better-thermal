@@ -1,4 +1,4 @@
-# uti_thermal_app
+# better_thermal
 
 A new Flutter project.
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uti_thermal_app/styles/themes.dart';
-import 'package:uti_thermal_app/widgets/home_screen.dart';
+import 'package:better_thermal/styles/themes.dart';
+import 'package:better_thermal/widgets/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'UTI Thermal Viewer',
+      title: 'UNI-T Thermal Viewer',
       theme: AppThemes.light,
       darkTheme: AppThemes.dark,
       themeMode: ThemeMode.system,
