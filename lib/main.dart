@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uti_thermal_app/styles/themes.dart';
 import 'package:uti_thermal_app/widgets/home_screen.dart';
 
 void main() {
@@ -12,7 +13,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'UTI Thermal Viewer',
-      theme: ThemeData.dark(),
+      theme: AppThemes.light,
+      darkTheme: AppThemes.dark,
+      themeMode: ThemeMode.system,
       home: const HomeScreen(),
     );
   }

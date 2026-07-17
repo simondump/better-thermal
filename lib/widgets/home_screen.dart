@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uti_thermal_app/services/device.dart';
+import 'package:uti_thermal_app/widgets/connect_button.dart';
+import 'package:uti_thermal_app/widgets/fps_text.dart';
 import 'package:uti_thermal_app/widgets/live_image.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,19 +20,47 @@ class _HomeScreenState extends State<HomeScreen> {
   );
 
   @override
+  void activate() {
+    super.activate();
+  }
+
+  @override
+  void dispose() {
+    _deviceService.disconnect();
+    super.dispose();
+  }
+
+  void _toggleConnection() {
+    if (_deviceService.status == DeviceStatus.disconnected) {
+      _deviceService.connect();
+    } else {
+      _deviceService.disconnect();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('UTI Thermal TCP Viewer'),
-      ),
       body: Center(
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 460),
           padding: const EdgeInsets.all(16),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LiveImageCanvas(deviceService: _deviceService),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 4,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LiveImageCanvas(deviceService: _deviceService),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FpsText(deviceService: _deviceService),
+              ),
+              ConnectButton(
+                deviceService: _deviceService,
+                onPressed: _toggleConnection,
+              ),
+            ],
           ),
         ),
       ),
