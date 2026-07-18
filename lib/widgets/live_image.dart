@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:better_thermal/services/device.dart';
+import 'package:better_thermal/services/live_stream.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 class LiveImageCanvas extends StatefulWidget {
-  final DeviceService deviceService;
+  final LiveStreamService liveStreamService;
 
-  const LiveImageCanvas({super.key, required this.deviceService});
+  const LiveImageCanvas({super.key, required this.liveStreamService});
 
   @override
   State<LiveImageCanvas> createState() =>
-      _LiveImageCanvasState(deviceService: deviceService);
+      _LiveImageCanvasState(liveStreamService: liveStreamService);
 }
 
 class _LiveImageCanvasState extends State<LiveImageCanvas> {
-  final DeviceService deviceService;
+  final LiveStreamService _liveStreamService;
 
   ui.Image? _latestFrame;
 
-  _LiveImageCanvasState({required this.deviceService});
+  _LiveImageCanvasState({required this._liveStreamService});
 
   @override
   void initState() {
     super.initState();
 
-    deviceService.frameStream.listen((Uint8List rgbaFrame) {
+    _liveStreamService.frameStream.listen((Uint8List rgbaFrame) {
       _decodeAndPublishFrame(rgbaFrame);
     });
   }
@@ -37,8 +37,8 @@ class _LiveImageCanvasState extends State<LiveImageCanvas> {
   void _decodeAndPublishFrame(Uint8List rgbaFrame) {
     ui.decodeImageFromPixels(
       rgbaFrame,
-      deviceService.frameWidth,
-      deviceService.frameHeight,
+      _liveStreamService.frameWidth,
+      _liveStreamService.frameHeight,
       ui.PixelFormat.rgba8888,
       (ui.Image image) {
         if (!mounted) {
@@ -60,7 +60,8 @@ class _LiveImageCanvasState extends State<LiveImageCanvas> {
       mainAxisSize: MainAxisSize.min,
       children: [
         AspectRatio(
-          aspectRatio: deviceService.frameWidth / deviceService.frameHeight,
+          aspectRatio:
+              _liveStreamService.frameWidth / _liveStreamService.frameHeight,
           child: CustomPaint(
             painter: _LiveImagePainter(image: _latestFrame),
             child: const SizedBox.expand(),

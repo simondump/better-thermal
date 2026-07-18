@@ -1,19 +1,21 @@
+import 'package:better_thermal/extensions/file_size_extension.dart';
 import 'package:flutter/material.dart';
-import 'package:better_thermal/services/device.dart';
+import 'package:better_thermal/services/live_stream.dart';
 import 'package:better_thermal/styles/themes.dart';
 
-class FpsText extends StatefulWidget {
-  final DeviceService deviceService;
+class ConnectionStatsText extends StatefulWidget {
+  final LiveStreamService deviceService;
 
-  const FpsText({super.key, required this.deviceService});
+  const ConnectionStatsText({super.key, required this.deviceService});
 
   @override
-  State<FpsText> createState() => _FpsTextState();
+  State<ConnectionStatsText> createState() => _ConnectionStatsTextState();
 }
 
-class _FpsTextState extends State<FpsText> {
+class _ConnectionStatsTextState extends State<ConnectionStatsText> {
   late DeviceStatus _currentStatus;
-  double? _currentFps;
+  double _currentKbps = 0;
+  double _currentFps = 0;
 
   @override
   void initState() {
@@ -29,6 +31,7 @@ class _FpsTextState extends State<FpsText> {
     widget.deviceService.fpsConnector.listen((fps) {
       setState(() {
         _currentFps = fps;
+        _currentKbps = (fps * widget.deviceService.bytesPerFrame * 8) / 1000;
       });
     });
   }
@@ -37,14 +40,15 @@ class _FpsTextState extends State<FpsText> {
   Widget build(BuildContext context) {
     final isDisconnected = _currentStatus == DeviceStatus.disconnected;
 
-    final fpsText = isDisconnected
+    final fpsText = isDisconnected ? 'N/A' : _currentFps.toStringAsFixed(1);
+    final kbpsText = isDisconnected
         ? 'N/A'
-        : _currentFps?.toStringAsFixed(1) ?? 'N/A';
+        : '${_currentKbps.toHumanReadableFileSize()}/s';
 
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
-        'FPS: $fpsText',
+        'FPS: $fpsText | Kbps: $kbpsText',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 12,

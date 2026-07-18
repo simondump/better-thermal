@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:better_thermal/services/device.dart';
+import 'package:better_thermal/services/live_stream.dart';
 import 'package:better_thermal/styles/themes.dart';
 
 class _ButtonConfig {
@@ -17,7 +17,7 @@ class _ButtonConfig {
 }
 
 class ConnectButton extends StatelessWidget {
-  final DeviceService deviceService;
+  final LiveStreamService deviceService;
 
   const ConnectButton({super.key, required this.deviceService});
 

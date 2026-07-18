@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 enum DeviceStatus { connecting, connected, disconnected, error }
 
-class DeviceService {
+class LiveStreamService {
   final int _maxFrameTimestamps = 10;
 
   final StreamController<DeviceStatus> _statusController =
@@ -38,7 +38,7 @@ class DeviceService {
 
   DeviceStatus get status => _status;
 
-  DeviceService({
+  LiveStreamService({
     required this.frameWidth,
     required this.frameHeight,
     required this.host,
