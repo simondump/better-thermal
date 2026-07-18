@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:better_thermal/services/live_stream.dart';
 import 'package:better_thermal/styles/themes.dart';
 
-class ConnectionStatsText extends StatefulWidget {
+class LiveStatsText extends StatefulWidget {
   final LiveStreamService deviceService;
 
-  const ConnectionStatsText({super.key, required this.deviceService});
+  const LiveStatsText({super.key, required this.deviceService});
 
   @override
-  State<ConnectionStatsText> createState() => _ConnectionStatsTextState();
+  State<LiveStatsText> createState() => _LiveStatsTextState();
 }
 
-class _ConnectionStatsTextState extends State<ConnectionStatsText> {
+class _LiveStatsTextState extends State<LiveStatsText> {
   late DeviceStatus _currentStatus;
   double _currentKbps = 0;
   double _currentFps = 0;

@@ -14,6 +14,7 @@ class AppColors {
     required this.onDanger,
     required this.background,
     required this.onBackground,
+    required this.onBackgroundMuted,
   });
 
   final Color primary;
@@ -28,6 +29,7 @@ class AppColors {
   final Color onDanger;
   final Color background;
   final Color onBackground;
+  final Color onBackgroundMuted;
 
   static const AppColors light = AppColors(
     primary: Color(0xFF0066FF),
@@ -42,6 +44,7 @@ class AppColors {
     onDanger: Color(0xFFFFFFFF),
     background: Color(0xFFF5F5F5),
     onBackground: Color(0xFF000000),
+    onBackgroundMuted: Color(0xFF757575),
   );
 
   static const AppColors dark = AppColors(
@@ -57,5 +60,6 @@ class AppColors {
     onDanger: Color(0xFFFFFFFF),
     background: Color(0xFF0F0F11),
     onBackground: Color(0xFFFFFFFF),
+    onBackgroundMuted: Color(0xFF47484B),
   );
 }

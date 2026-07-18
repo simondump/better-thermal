@@ -1,6 +1,6 @@
+import 'package:better_thermal/widgets/app.dart';
 import 'package:flutter/material.dart';
 import 'package:better_thermal/styles/themes.dart';
-import 'package:better_thermal/widgets/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: AppThemes.light,
       darkTheme: AppThemes.dark,
       themeMode: ThemeMode.system,
-      home: const HomeScreen(),
+      home: const AppScreen(),
     );
   }
 }

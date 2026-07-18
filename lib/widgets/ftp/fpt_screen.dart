@@ -1,19 +1,19 @@
 import 'package:better_thermal/components/alert.dart';
 import 'package:better_thermal/styles/themes.dart';
-import 'package:better_thermal/widgets/connection_stats_text.dart';
+import 'package:better_thermal/widgets/live/live_stats_text.dart';
 import 'package:flutter/material.dart';
 import 'package:better_thermal/services/live_stream.dart';
-import 'package:better_thermal/widgets/connect_button.dart';
-import 'package:better_thermal/widgets/live_image.dart';
+import 'package:better_thermal/widgets/live/connect_button.dart';
+import 'package:better_thermal/widgets/live/live_image.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class FtpScreen extends StatefulWidget {
+  const FtpScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<FtpScreen> createState() => _FtpScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _FtpScreenState extends State<FtpScreen> {
   final LiveStreamService _liveStreamService = LiveStreamService(
     host: '192.168.16.10',
     port: 9527,
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Align(
                 alignment: Alignment.centerLeft,
-                child: ConnectionStatsText(deviceService: _liveStreamService),
+                child: LiveStatsText(deviceService: _liveStreamService),
               ),
               ConnectButton(deviceService: _liveStreamService),
             ],
