@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:better_thermal/services/live_stream.dart';
+import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 

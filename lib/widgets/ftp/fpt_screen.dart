@@ -1,81 +1,116 @@
 import 'package:better_thermal/components/alert.dart';
+import 'package:better_thermal/services/ftp_service/directory_entry.dart';
+import 'package:better_thermal/services/ftp_service/ftp_service.dart';
 import 'package:better_thermal/styles/themes.dart';
-import 'package:better_thermal/widgets/live/live_stats_text.dart';
 import 'package:flutter/material.dart';
-import 'package:better_thermal/services/live_stream.dart';
-import 'package:better_thermal/widgets/live/connect_button.dart';
-import 'package:better_thermal/widgets/live/live_image.dart';
+
+import 'ftp_image_preview.dart';
 
 class FtpScreen extends StatefulWidget {
-  const FtpScreen({super.key});
+  final FtpService ftpService;
+
+  const FtpScreen({super.key, required this.ftpService});
 
   @override
   State<FtpScreen> createState() => _FtpScreenState();
 }
 
 class _FtpScreenState extends State<FtpScreen> {
-  final LiveStreamService _liveStreamService = LiveStreamService(
-    host: '192.168.16.10',
-    port: 9527,
-    width: 400,
-    height: 300,
-  );
+  static const int _pageSize = 10;
+  late final List<DirectoryEntryThumbnail> _entries = [];
+  late ScrollController _scrollController;
+
+  bool _isLoading = false;
+  int _currentPage = 0;
 
   @override
-  void activate() {
-    super.activate();
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    _loadMore();
   }
 
   @override
   void dispose() {
-    _liveStreamService.disconnect();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _loadMore() {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    widget.ftpService
+        .listImages(_currentPage, _pageSize)
+        .then((entries) {
+          setState(() {
+            _entries.addAll(entries);
+            _currentPage++;
+            _isLoading = false;
+          });
+        })
+        .catchError((error) {
+          setState(() {
+            _isLoading = false;
+          });
+        });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      _loadMore();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: context.theme.colors.background,
-        systemOverlayStyle: context.theme.systemUiOverlayStyle,
-      ),
-      body: Center(
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          margin: const EdgeInsets.only(bottom: 64),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 4,
-            children: [
-              StreamBuilder(
-                stream: _liveStreamService.statusStream,
-                builder: (context, snapshot) {
-                  return AnimatedOpacity(
-                    opacity: _liveStreamService.status == DeviceStatus.error
-                        ? 1
-                        : 0,
-                    duration: const Duration(milliseconds: 150),
-                    child: const Alert(
-                      type: .danger,
-                      message:
-                          'Failed to connect to device. Click connect to device to try again.',
-                    ),
-                  );
-                },
-              ),
+    if (_entries.isEmpty && !_isLoading) {
+      return SafeArea(
+        child: Alert(type: .success, message: 'No images found.'),
+      );
+    }
 
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LiveImageCanvas(liveStreamService: _liveStreamService),
+    return SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: GridView(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 0,
+                crossAxisSpacing: 0,
               ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: LiveStatsText(deviceService: _liveStreamService),
-              ),
-              ConnectButton(deviceService: _liveStreamService),
-            ],
+              children: _entries
+                  .map(
+                    (entry) => FtpImagePreview(
+                      entry: entry,
+                      width: DirectoryEntry.width,
+                      height: DirectoryEntry.height,
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
-        ),
+          if (_isLoading)
+            Padding(
+              padding: EdgeInsets.all(24),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  color: context.theme.colors.primary,
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

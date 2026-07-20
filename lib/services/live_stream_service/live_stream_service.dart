@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-enum DeviceStatus { connecting, connected, disconnected, error }
+enum LiveStreamStatus { connecting, connected, disconnected, error }
 
 class LiveStreamService {
   final int _maxFrameTimestamps = 10;
 
-  final StreamController<DeviceStatus> _statusController =
-      StreamController<DeviceStatus>.broadcast();
+  final StreamController<LiveStreamStatus> _statusController =
+      StreamController<LiveStreamStatus>.broadcast();
 
   final StreamController<Uint8List> _frameController =
       StreamController<Uint8List>.broadcast();
@@ -16,7 +16,7 @@ class LiveStreamService {
   final StreamController<double> _fpsController =
       StreamController<double>.broadcast();
 
-  Stream<DeviceStatus> get statusStream => _statusController.stream;
+  Stream<LiveStreamStatus> get statusStream => _statusController.stream;
 
   Stream<Uint8List> get frameStream => _frameController.stream;
 
@@ -34,9 +34,9 @@ class LiveStreamService {
   final List<int> _frameTimestamps = <int>[];
   late final Uint8List _latestFrameBytes;
 
-  DeviceStatus _status = DeviceStatus.disconnected;
+  LiveStreamStatus _status = LiveStreamStatus.disconnected;
 
-  DeviceStatus get status => _status;
+  LiveStreamStatus get status => _status;
 
   LiveStreamService({
     required this.width,
@@ -49,9 +49,9 @@ class LiveStreamService {
   }
 
   void connect() {
-    if (_status != DeviceStatus.connected &&
-        _status != DeviceStatus.connecting) {
-      _updateStatus(DeviceStatus.connecting);
+    if (_status != LiveStreamStatus.connected &&
+        _status != LiveStreamStatus.connecting) {
+      _updateStatus(LiveStreamStatus.connecting);
       _nextFrame();
     }
   }
@@ -60,7 +60,7 @@ class LiveStreamService {
     _socket?.destroy();
     _socket = null;
     _frameBuffer.removeRange(0, _frameBuffer.length);
-    _updateStatus(DeviceStatus.disconnected);
+    _updateStatus(LiveStreamStatus.disconnected);
   }
 
   Future<void> _nextFrame() async {
@@ -72,7 +72,7 @@ class LiveStreamService {
         timeout: const Duration(seconds: 3),
       );
 
-      _updateStatus(DeviceStatus.connected);
+      _updateStatus(LiveStreamStatus.connected);
 
       _socket!.listen(
         _handleSocketData,
@@ -81,7 +81,7 @@ class LiveStreamService {
         cancelOnError: true,
       );
     } catch (error) {
-      _updateStatus(DeviceStatus.error);
+      _updateStatus(LiveStreamStatus.error);
     }
   }
 
@@ -94,7 +94,7 @@ class LiveStreamService {
     _socket?.destroy();
     _socket = null;
 
-    _updateStatus(DeviceStatus.error);
+    _updateStatus(LiveStreamStatus.error);
   }
 
   void _handleSocketData(Uint8List chunk) {
@@ -144,7 +144,7 @@ class LiveStreamService {
     _frameController.add(rgbaFrame);
   }
 
-  void _updateStatus(DeviceStatus status) {
+  void _updateStatus(LiveStreamStatus status) {
     _status = status;
     _statusController.add(status);
   }

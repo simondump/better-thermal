@@ -1,6 +1,6 @@
 import 'package:better_thermal/extensions/file_size_extension.dart';
 import 'package:flutter/material.dart';
-import 'package:better_thermal/services/live_stream.dart';
+import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
 import 'package:better_thermal/styles/themes.dart';
 
 class LiveStatsText extends StatefulWidget {
@@ -13,7 +13,7 @@ class LiveStatsText extends StatefulWidget {
 }
 
 class _LiveStatsTextState extends State<LiveStatsText> {
-  late DeviceStatus _currentStatus;
+  late LiveStreamStatus _currentStatus;
   double _currentKbps = 0;
   double _currentFps = 0;
 
@@ -38,7 +38,7 @@ class _LiveStatsTextState extends State<LiveStatsText> {
 
   @override
   Widget build(BuildContext context) {
-    final isDisconnected = _currentStatus == DeviceStatus.disconnected;
+    final isDisconnected = _currentStatus == LiveStreamStatus.disconnected;
 
     final fpsText = isDisconnected ? 'N/A' : _currentFps.toStringAsFixed(1);
     final kbpsText = isDisconnected

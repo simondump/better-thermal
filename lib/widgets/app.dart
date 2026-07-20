@@ -1,4 +1,5 @@
-import 'package:better_thermal/services/live_stream.dart';
+import 'package:better_thermal/services/ftp_service/ftp_service.dart';
+import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
 import 'package:better_thermal/styles/themes.dart';
 import 'package:better_thermal/widgets/ftp/fpt_screen.dart';
 import 'package:better_thermal/widgets/live/live_stream.dart';
@@ -12,6 +13,7 @@ class AppScreen extends StatefulWidget {
 }
 
 class _AppScreenState extends State<AppScreen> {
+  final FtpService _ftpService = FtpService(host: '192.168.16.10', port: 9528);
   final LiveStreamService _liveStreamService = LiveStreamService(
     host: '192.168.16.10',
     port: 9527,
@@ -29,6 +31,7 @@ class _AppScreenState extends State<AppScreen> {
   @override
   void dispose() {
     super.dispose();
+    _liveStreamService.disconnect();
   }
 
   @override
@@ -68,7 +71,7 @@ class _AppScreenState extends State<AppScreen> {
         index: currentPageIndex,
         children: <Widget>[
           LiveStream(liveStreamService: _liveStreamService),
-          FtpScreen(),
+          FtpScreen(ftpService: _ftpService),
         ],
       ),
     );

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:better_thermal/services/live_stream.dart';
+import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
 import 'package:better_thermal/styles/themes.dart';
 
 class _ButtonConfig {
@@ -21,7 +21,7 @@ class ConnectButton extends StatelessWidget {
 
   const ConnectButton({super.key, required this.deviceService});
 
-  Map<DeviceStatus, _ButtonConfig> _getConfigMap(BuildContext context) {
+  Map<LiveStreamStatus, _ButtonConfig> _getConfigMap(BuildContext context) {
     final base = _ButtonConfig(
       text: 'Connect to device',
       icon: Icons.wifi,
@@ -30,30 +30,30 @@ class ConnectButton extends StatelessWidget {
     );
 
     return {
-      DeviceStatus.connecting: _ButtonConfig(
+      LiveStreamStatus.connecting: _ButtonConfig(
         text: 'Connecting...',
         icon: Icons.wifi_off,
         backgroundColor: context.theme.colors.warning,
         foregroundColor: context.theme.colors.onWarning,
       ),
-      DeviceStatus.connected: _ButtonConfig(
+      LiveStreamStatus.connected: _ButtonConfig(
         text: 'Disconnect',
         icon: Icons.wifi_off,
         backgroundColor: context.theme.colors.danger,
         foregroundColor: context.theme.colors.onSuccess,
       ),
-      DeviceStatus.disconnected: base,
-      DeviceStatus.error: base,
+      LiveStreamStatus.disconnected: base,
+      LiveStreamStatus.error: base,
     };
   }
 
   void _toggleConnection() {
-    if (deviceService.status == DeviceStatus.connecting) {
+    if (deviceService.status == LiveStreamStatus.connecting) {
       return;
     }
 
-    if (deviceService.status == DeviceStatus.error ||
-        deviceService.status == DeviceStatus.disconnected) {
+    if (deviceService.status == LiveStreamStatus.error ||
+        deviceService.status == LiveStreamStatus.disconnected) {
       deviceService.connect();
     } else {
       deviceService.disconnect();
@@ -62,11 +62,11 @@ class ConnectButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DeviceStatus>(
+    return StreamBuilder<LiveStreamStatus>(
       stream: deviceService.statusStream,
       initialData: deviceService.status,
       builder: (context, snapshot) {
-        final status = snapshot.data ?? DeviceStatus.disconnected;
+        final status = snapshot.data ?? LiveStreamStatus.disconnected;
         final config = _getConfigMap(context)[status]!;
 
         return ElevatedButton.icon(

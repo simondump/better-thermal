@@ -2,7 +2,7 @@ import 'package:better_thermal/components/alert.dart';
 import 'package:better_thermal/styles/themes.dart';
 import 'package:better_thermal/widgets/live/live_stats_text.dart';
 import 'package:flutter/material.dart';
-import 'package:better_thermal/services/live_stream.dart';
+import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
 import 'package:better_thermal/widgets/live/connect_button.dart';
 import 'package:better_thermal/widgets/live/live_image.dart';
 
@@ -37,7 +37,7 @@ class _LiveStreamState extends State<LiveStream> {
                 stream: liveStreamService.statusStream,
                 builder: (context, snapshot) {
                   return AnimatedOpacity(
-                    opacity: liveStreamService.status == DeviceStatus.error
+                    opacity: liveStreamService.status == LiveStreamStatus.error
                         ? 1
                         : 0,
                     duration: const Duration(milliseconds: 150),
