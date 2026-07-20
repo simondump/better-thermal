@@ -22,11 +22,11 @@ class LiveStreamService {
 
   Stream<double> get fpsConnector => _fpsController.stream;
 
+  late final int bytesPerFrame;
   final String host;
   final int port;
-  final int frameWidth;
-  final int frameHeight;
-  late final int bytesPerFrame;
+  final int width;
+  final int height;
 
   Socket? _socket;
 
@@ -39,13 +39,13 @@ class LiveStreamService {
   DeviceStatus get status => _status;
 
   LiveStreamService({
-    required this.frameWidth,
-    required this.frameHeight,
+    required this.width,
+    required this.height,
     required this.host,
     required this.port,
   }) {
-    bytesPerFrame = frameWidth * frameHeight * 3;
-    _latestFrameBytes = Uint8List(frameWidth * frameHeight * 4);
+    bytesPerFrame = width * height * 3;
+    _latestFrameBytes = Uint8List(width * height * 4);
   }
 
   void connect() {

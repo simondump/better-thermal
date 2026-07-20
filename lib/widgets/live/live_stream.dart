@@ -6,34 +6,20 @@ import 'package:better_thermal/services/live_stream.dart';
 import 'package:better_thermal/widgets/live/connect_button.dart';
 import 'package:better_thermal/widgets/live/live_image.dart';
 
-class LiveScreen extends StatefulWidget {
-  const LiveScreen({super.key});
+class LiveStream extends StatefulWidget {
+  final LiveStreamService liveStreamService;
+
+  const LiveStream({super.key, required this.liveStreamService});
 
   @override
-  State<LiveScreen> createState() => _LiveScreenState();
+  State<LiveStream> createState() => _LiveStreamState();
 }
 
-class _LiveScreenState extends State<LiveScreen> {
-  final LiveStreamService _liveStreamService = LiveStreamService(
-    host: '192.168.16.10',
-    port: 9527,
-    frameWidth: 400,
-    frameHeight: 300,
-  );
-
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void dispose() {
-    _liveStreamService.disconnect();
-    super.dispose();
-  }
-
+class _LiveStreamState extends State<LiveStream> {
   @override
   Widget build(BuildContext context) {
+    final liveStreamService = super.widget.liveStreamService;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: context.theme.colors.background,
@@ -48,10 +34,10 @@ class _LiveScreenState extends State<LiveScreen> {
             spacing: 4,
             children: [
               StreamBuilder(
-                stream: _liveStreamService.statusStream,
+                stream: liveStreamService.statusStream,
                 builder: (context, snapshot) {
                   return AnimatedOpacity(
-                    opacity: _liveStreamService.status == DeviceStatus.error
+                    opacity: liveStreamService.status == DeviceStatus.error
                         ? 1
                         : 0,
                     duration: const Duration(milliseconds: 150),
@@ -66,13 +52,13 @@ class _LiveScreenState extends State<LiveScreen> {
 
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: LiveImageCanvas(liveStreamService: _liveStreamService),
+                child: LiveImageCanvas(liveStreamService: liveStreamService),
               ),
               Align(
                 alignment: Alignment.centerLeft,
-                child: LiveStatsText(deviceService: _liveStreamService),
+                child: LiveStatsText(deviceService: liveStreamService),
               ),
-              ConnectButton(deviceService: _liveStreamService),
+              ConnectButton(deviceService: liveStreamService),
             ],
           ),
         ),

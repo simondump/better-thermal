@@ -17,8 +17,8 @@ class _FtpScreenState extends State<FtpScreen> {
   final LiveStreamService _liveStreamService = LiveStreamService(
     host: '192.168.16.10',
     port: 9527,
-    frameWidth: 400,
-    frameHeight: 300,
+    width: 400,
+    height: 300,
   );
 
   @override

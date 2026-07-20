@@ -37,8 +37,8 @@ class _LiveImageCanvasState extends State<LiveImageCanvas> {
   void _decodeAndPublishFrame(Uint8List rgbaFrame) {
     ui.decodeImageFromPixels(
       rgbaFrame,
-      _liveStreamService.frameWidth,
-      _liveStreamService.frameHeight,
+      _liveStreamService.width,
+      _liveStreamService.height,
       ui.PixelFormat.rgba8888,
       (ui.Image image) {
         if (!mounted) {
@@ -60,8 +60,7 @@ class _LiveImageCanvasState extends State<LiveImageCanvas> {
       mainAxisSize: MainAxisSize.min,
       children: [
         AspectRatio(
-          aspectRatio:
-              _liveStreamService.frameWidth / _liveStreamService.frameHeight,
+          aspectRatio: _liveStreamService.width / _liveStreamService.height,
           child: CustomPaint(
             painter: _LiveImagePainter(image: _latestFrame),
             child: const SizedBox.expand(),

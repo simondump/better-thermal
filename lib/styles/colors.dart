@@ -13,6 +13,8 @@ class AppColors {
     required this.danger,
     required this.onDanger,
     required this.background,
+    required this.navigation,
+    required this.onNavigation,
     required this.onBackground,
     required this.onBackgroundMuted,
   });
@@ -28,6 +30,8 @@ class AppColors {
   final Color danger;
   final Color onDanger;
   final Color background;
+  final Color navigation;
+  final Color onNavigation;
   final Color onBackground;
   final Color onBackgroundMuted;
 
@@ -43,6 +47,8 @@ class AppColors {
     danger: Color(0xFFD32F2F),
     onDanger: Color(0xFFFFFFFF),
     background: Color(0xFFF5F5F5),
+    navigation: Color(0xFFF5F5F5),
+    onNavigation: Color(0xFF000000),
     onBackground: Color(0xFF000000),
     onBackgroundMuted: Color(0xFF757575),
   );
@@ -59,6 +65,8 @@ class AppColors {
     danger: Color(0xFFEF5350),
     onDanger: Color(0xFFFFFFFF),
     background: Color(0xFF0F0F11),
+    navigation: Color(0xFF14141C),
+    onNavigation: Color(0xFF708EF5),
     onBackground: Color(0xFFFFFFFF),
     onBackgroundMuted: Color(0xFF47484B),
   );
