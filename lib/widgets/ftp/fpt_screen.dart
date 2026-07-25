@@ -16,28 +16,21 @@ class FtpScreen extends StatefulWidget {
 }
 
 class _FtpScreenState extends State<FtpScreen> {
-  static const int _pageSize = 10;
-  late final List<DirectoryEntryThumbnail> _entries = [];
-  late ScrollController _scrollController;
+  static const int _pageSize = 8;
+  late final Map<int, List<DirectoryEntryThumbnail>> _cachedPages = {};
 
   bool _isLoading = false;
   int _currentPage = 0;
+  List<DirectoryEntryThumbnail> _currentPageEntries = [];
+  int _lastPageSize = _pageSize; // Track if last page had fewer items
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
-    _loadMore();
+    _loadPage(_currentPage);
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _loadMore() {
+  void _loadPage(int page) {
     if (_isLoading) return;
 
     setState(() {
@@ -45,11 +38,12 @@ class _FtpScreenState extends State<FtpScreen> {
     });
 
     widget.ftpService
-        .listImages(_currentPage, _pageSize)
+        .listImages(page, _pageSize)
         .then((entries) {
           setState(() {
-            _entries.addAll(entries);
-            _currentPage++;
+            _cachedPages[page] = entries;
+            _currentPageEntries = entries;
+            _lastPageSize = entries.length;
             _isLoading = false;
           });
         })
@@ -60,56 +54,129 @@ class _FtpScreenState extends State<FtpScreen> {
         });
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      _loadMore();
+  void _goToNextPage() {
+    if (_lastPageSize == _pageSize) {
+      _currentPage++;
+      _loadPage(_currentPage);
     }
+  }
+
+  void _goToPreviousPage() {
+    if (_currentPage > 0) {
+      _currentPage--;
+      if (_cachedPages.containsKey(_currentPage)) {
+        setState(() {
+          _currentPageEntries = _cachedPages[_currentPage]!;
+        });
+      } else {
+        _loadPage(_currentPage);
+      }
+    }
+  }
+
+  void _refreshCurrentPage() {
+    _loadPage(_currentPage);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_entries.isEmpty && !_isLoading) {
-      return SafeArea(
-        child: Alert(type: .success, message: 'No images found.'),
+    if (_currentPageEntries.isEmpty && !_isLoading) {
+      return Padding(
+        padding: EdgeInsetsGeometry.all(8),
+        child: Column(
+          mainAxisAlignment: .end,
+          spacing: 8,
+          children: [
+            Alert(type: .success, message: 'No images found.'),
+            ElevatedButton.icon(
+              onPressed: _isLoading ? null : _refreshCurrentPage,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Refresh'),
+            ),
+          ],
+        ),
       );
     }
+
+    bool isFirstPage = _currentPage == 0;
+    bool isLastPage = _lastPageSize < _pageSize;
+    bool hasNextPage = _lastPageSize == _pageSize;
 
     return SafeArea(
       child: Column(
         children: [
           Expanded(
-            child: GridView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 0,
-                crossAxisSpacing: 0,
-              ),
-              children: _entries
-                  .map(
-                    (entry) => FtpImagePreview(
-                      entry: entry,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const rows = 4;
+                const columns = 2;
+                const spacing = 8.0;
+
+                final itemWidth =
+                    (constraints.maxWidth - spacing * (columns - 1)) / columns;
+
+                final itemHeight =
+                    (constraints.maxHeight - spacing * (rows - 1)) / rows;
+
+                return GridView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _currentPageEntries.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: spacing,
+                    mainAxisSpacing: spacing,
+                    childAspectRatio: itemWidth / itemHeight,
+                  ),
+                  itemBuilder: (context, index) {
+                    return FtpImagePreview(
+                      entry: _currentPageEntries[index],
                       width: DirectoryEntry.width,
                       height: DirectoryEntry.height,
-                    ),
-                  )
-                  .toList(),
+                    );
+                  },
+                );
+              },
             ),
           ),
-          if (_isLoading)
-            Padding(
-              padding: EdgeInsets.all(24),
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  color: context.theme.colors.primary,
-                  strokeWidth: 2,
-                ),
-              ),
-            ),
+          SizedBox(
+            height: 64,
+            child: _isLoading
+                ? Center(
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        color: context.theme.colors.primary,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 12,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: isFirstPage || _isLoading
+                            ? null
+                            : _goToPreviousPage,
+                        icon: const Icon(Icons.arrow_back),
+                        label: const Text('Previous'),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _refreshCurrentPage,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Refresh'),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: (isLastPage || !hasNextPage || _isLoading)
+                            ? null
+                            : _goToNextPage,
+                        icon: const Icon(Icons.arrow_forward),
+                        label: const Text('Next'),
+                      ),
+                    ],
+                  ),
+          ),
         ],
       ),
     );
