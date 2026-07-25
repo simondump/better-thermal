@@ -1,5 +1,4 @@
 import 'package:better_thermal/components/alert.dart';
-import 'package:better_thermal/styles/themes.dart';
 import 'package:better_thermal/widgets/live/live_stats_text.dart';
 import 'package:flutter/material.dart';
 import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
@@ -21,10 +20,7 @@ class _LiveStreamState extends State<LiveStream> {
     final liveStreamService = super.widget.liveStreamService;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: context.theme.colors.background,
-        systemOverlayStyle: context.theme.systemUiOverlayStyle,
-      ),
+      appBar: AppBar(),
       body: Center(
         child: Container(
           padding: const EdgeInsets.all(16),

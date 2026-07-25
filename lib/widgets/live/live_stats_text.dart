@@ -1,7 +1,6 @@
 import 'package:better_thermal/extensions/file_size_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
-import 'package:better_thermal/styles/themes.dart';
 
 class LiveStatsText extends StatefulWidget {
   final LiveStreamService deviceService;
@@ -52,7 +51,7 @@ class _LiveStatsTextState extends State<LiveStatsText> {
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 12,
-          color: context.theme.colors.onBackground,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );

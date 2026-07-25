@@ -1,7 +1,6 @@
 import 'package:better_thermal/components/alert.dart';
 import 'package:better_thermal/services/ftp_service/directory_entry.dart';
 import 'package:better_thermal/services/ftp_service/ftp_service.dart';
-import 'package:better_thermal/styles/themes.dart';
 import 'package:flutter/material.dart';
 
 import 'ftp_image_preview.dart';
@@ -106,36 +105,43 @@ class _FtpScreenState extends State<FtpScreen> {
       child: Column(
         children: [
           Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                const rows = 4;
-                const columns = 2;
-                const spacing = 8.0;
+            child: Padding(
+              padding: EdgeInsetsGeometry.all(8),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  const rows = 4;
+                  const columns = 2;
+                  const crossAxisSpacing = 4.0;
+                  const mainAxisSpacing = 8.0;
 
-                final itemWidth =
-                    (constraints.maxWidth - spacing * (columns - 1)) / columns;
+                  final itemWidth =
+                      (constraints.maxWidth -
+                          crossAxisSpacing * (columns - 1)) /
+                      columns;
 
-                final itemHeight =
-                    (constraints.maxHeight - spacing * (rows - 1)) / rows;
+                  final itemHeight =
+                      (constraints.maxHeight - mainAxisSpacing * (rows - 1)) /
+                      rows;
 
-                return GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _currentPageEntries.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns,
-                    crossAxisSpacing: spacing,
-                    mainAxisSpacing: spacing,
-                    childAspectRatio: itemWidth / itemHeight,
-                  ),
-                  itemBuilder: (context, index) {
-                    return FtpImagePreview(
-                      entry: _currentPageEntries[index],
-                      width: DirectoryEntry.width,
-                      height: DirectoryEntry.height,
-                    );
-                  },
-                );
-              },
+                  return GridView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _currentPageEntries.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
+                      crossAxisSpacing: crossAxisSpacing,
+                      mainAxisSpacing: mainAxisSpacing,
+                      childAspectRatio: itemWidth / itemHeight,
+                    ),
+                    itemBuilder: (context, index) {
+                      return FtpImagePreview(
+                        entry: _currentPageEntries[index],
+                        width: DirectoryEntry.width,
+                        height: DirectoryEntry.height,
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
           SizedBox(
@@ -145,10 +151,7 @@ class _FtpScreenState extends State<FtpScreen> {
                     child: SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(
-                        color: context.theme.colors.primary,
-                        strokeWidth: 2,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   )
                 : Row(
@@ -156,16 +159,16 @@ class _FtpScreenState extends State<FtpScreen> {
                     spacing: 12,
                     children: [
                       ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _refreshCurrentPage,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Refresh'),
+                      ),
+                      ElevatedButton.icon(
                         onPressed: isFirstPage || _isLoading
                             ? null
                             : _goToPreviousPage,
                         icon: const Icon(Icons.arrow_back),
                         label: const Text('Previous'),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: _isLoading ? null : _refreshCurrentPage,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Refresh'),
                       ),
                       ElevatedButton.icon(
                         onPressed: (isLastPage || !hasNextPage || _isLoading)

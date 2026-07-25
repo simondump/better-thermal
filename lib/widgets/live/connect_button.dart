@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
-import 'package:better_thermal/styles/themes.dart';
 
 class _ButtonConfig {
   final String text;
@@ -22,25 +21,26 @@ class ConnectButton extends StatelessWidget {
   const ConnectButton({super.key, required this.deviceService});
 
   Map<LiveStreamStatus, _ButtonConfig> _getConfigMap(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final base = _ButtonConfig(
       text: 'Connect to device',
       icon: Icons.wifi,
-      backgroundColor: context.theme.colors.success,
-      foregroundColor: context.theme.colors.onSuccess,
+      backgroundColor: colors.tertiary,
+      foregroundColor: colors.onTertiary,
     );
 
     return {
       LiveStreamStatus.connecting: _ButtonConfig(
         text: 'Connecting...',
         icon: Icons.wifi_off,
-        backgroundColor: context.theme.colors.warning,
-        foregroundColor: context.theme.colors.onWarning,
+        backgroundColor: colors.secondary,
+        foregroundColor: colors.onSecondary,
       ),
       LiveStreamStatus.connected: _ButtonConfig(
         text: 'Disconnect',
         icon: Icons.wifi_off,
-        backgroundColor: context.theme.colors.danger,
-        foregroundColor: context.theme.colors.onSuccess,
+        backgroundColor: colors.error,
+        foregroundColor: colors.onError,
       ),
       LiveStreamStatus.disconnected: base,
       LiveStreamStatus.error: base,

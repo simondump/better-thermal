@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:better_thermal/services/ftp_service/directory_entry.dart';
-import 'package:better_thermal/styles/themes.dart';
 import 'package:flutter/material.dart';
 
 class FtpImagePreview extends StatefulWidget {
@@ -108,37 +107,6 @@ class _FtpImagePreviewState extends State<FtpImagePreview> {
     return imageCompleter.future;
   }
 
-  @override
-  void dispose() {
-    _loadGeneration++;
-    _image?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      spacing: 0,
-      children: [
-        SizedBox(
-          width: double.maxFinite,
-          child: Padding(padding: EdgeInsets.all(4), child: _buildImage()),
-        ),
-        Text(
-          widget.entry.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: context.theme.colors.onBackground,
-            fontSize: 12,
-            fontWeight: .bold,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildImage() {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
@@ -149,5 +117,33 @@ class _FtpImagePreviewState extends State<FtpImagePreview> {
     }
 
     return RawImage(image: _image, fit: BoxFit.contain);
+  }
+
+  @override
+  void dispose() {
+    _loadGeneration++;
+    _image?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      spacing: 4,
+      children: [
+        Expanded(child: _buildImage()),
+        Text(
+          widget.entry.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 10,
+            fontWeight: .bold,
+          ),
+        ),
+      ],
+    );
   }
 }

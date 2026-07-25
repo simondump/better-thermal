@@ -1,4 +1,3 @@
-import 'package:better_thermal/styles/themes.dart';
 import 'package:flutter/material.dart';
 
 enum AlertType { primary, secondary, success, warning, danger }
@@ -28,33 +27,33 @@ class Alert extends StatelessWidget {
   });
 
   AlertStyle _getStyle(BuildContext context) {
-    final colors = context.theme.colors;
+    final colors = Theme.of(context).colorScheme;
 
     final styles = {
       AlertType.primary: AlertStyle(
-        backgroundColor: colors.primary.withValues(alpha: 0.1),
+        backgroundColor: colors.primaryContainer,
         borderColor: colors.primary,
-        textColor: colors.onPrimary,
+        textColor: colors.onPrimaryContainer,
       ),
       AlertType.secondary: AlertStyle(
-        backgroundColor: colors.secondary.withValues(alpha: 0.1),
+        backgroundColor: colors.secondaryContainer,
         borderColor: colors.secondary,
-        textColor: colors.onSecondary,
+        textColor: colors.onSecondaryContainer,
       ),
       AlertType.success: AlertStyle(
-        backgroundColor: colors.success.withValues(alpha: 0.1),
-        borderColor: colors.success,
-        textColor: colors.onSuccess,
+        backgroundColor: colors.tertiaryContainer,
+        borderColor: colors.tertiary,
+        textColor: colors.onTertiaryContainer,
       ),
       AlertType.warning: AlertStyle(
-        backgroundColor: colors.warning.withValues(alpha: 0.1),
-        borderColor: colors.warning,
-        textColor: colors.onWarning,
+        backgroundColor: colors.surfaceContainerHighest,
+        borderColor: colors.outline,
+        textColor: colors.onSurface,
       ),
       AlertType.danger: AlertStyle(
-        backgroundColor: colors.danger.withValues(alpha: 0.1),
-        borderColor: colors.danger,
-        textColor: colors.onDanger,
+        backgroundColor: colors.errorContainer,
+        borderColor: colors.error,
+        textColor: colors.onErrorContainer,
       ),
     };
 
