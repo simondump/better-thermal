@@ -16,12 +16,12 @@ class FtpScreen extends StatefulWidget {
 
 class _FtpScreenState extends State<FtpScreen> {
   static const int _pageSize = 8;
+
   late final Map<int, List<DirectoryEntryThumbnail>> _cachedPages = {};
 
+  bool _isErrored = false;
   bool _isLoading = false;
   int _currentPage = 0;
-  List<DirectoryEntryThumbnail> _currentPageEntries = [];
-  int _lastPageSize = _pageSize; // Track if last page had fewer items
 
   @override
   void initState() {
@@ -40,36 +40,40 @@ class _FtpScreenState extends State<FtpScreen> {
         .listImages(page, _pageSize)
         .then((entries) {
           setState(() {
+            _currentPage = page;
             _cachedPages[page] = entries;
-            _currentPageEntries = entries;
-            _lastPageSize = entries.length;
             _isLoading = false;
+            _isErrored = false;
           });
         })
         .catchError((error) {
           setState(() {
             _isLoading = false;
+            _isErrored = true;
           });
         });
   }
 
   void _goToNextPage() {
-    if (_lastPageSize == _pageSize) {
-      _currentPage++;
-      _loadPage(_currentPage);
+    if (_cachedPages[_currentPage] == null ||
+        _cachedPages[_currentPage]!.length == _pageSize) {
+      int nextPage = _currentPage + 1;
+
+      if (_cachedPages.containsKey(nextPage)) {
+        setState(() {
+          _currentPage = nextPage;
+        });
+      } else {
+        _loadPage(nextPage);
+      }
     }
   }
 
   void _goToPreviousPage() {
     if (_currentPage > 0) {
-      _currentPage--;
-      if (_cachedPages.containsKey(_currentPage)) {
-        setState(() {
-          _currentPageEntries = _cachedPages[_currentPage]!;
-        });
-      } else {
-        _loadPage(_currentPage);
-      }
+      setState(() {
+        _currentPage--;
+      });
     }
   }
 
@@ -79,14 +83,26 @@ class _FtpScreenState extends State<FtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_currentPageEntries.isEmpty && !_isLoading) {
+    if (_cachedPages.isEmpty && !_isLoading) {
       return Padding(
         padding: EdgeInsetsGeometry.all(8),
         child: Column(
           mainAxisAlignment: .end,
           spacing: 8,
           children: [
-            Alert(type: .success, message: 'No images found.'),
+            if (_isErrored)
+              const Alert(
+                type: AlertType.danger,
+                message: 'Failed to load images. Please try again.',
+              ),
+            if (_isLoading)
+              const Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
             ElevatedButton.icon(
               onPressed: _isLoading ? null : _refreshCurrentPage,
               icon: const Icon(Icons.refresh),
@@ -97,9 +113,12 @@ class _FtpScreenState extends State<FtpScreen> {
       );
     }
 
+    List<DirectoryEntryThumbnail> currentPageEntries =
+        _cachedPages[_currentPage] ?? [];
+
     bool isFirstPage = _currentPage == 0;
-    bool isLastPage = _lastPageSize < _pageSize;
-    bool hasNextPage = _lastPageSize == _pageSize;
+    bool isLastPage = currentPageEntries.length < _pageSize;
+    bool hasNextPage = currentPageEntries.length == _pageSize;
 
     return SafeArea(
       child: Column(
@@ -125,7 +144,7 @@ class _FtpScreenState extends State<FtpScreen> {
 
                   return GridView.builder(
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _currentPageEntries.length,
+                    itemCount: currentPageEntries.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: columns,
                       crossAxisSpacing: crossAxisSpacing,
@@ -134,7 +153,7 @@ class _FtpScreenState extends State<FtpScreen> {
                     ),
                     itemBuilder: (context, index) {
                       return FtpImagePreview(
-                        entry: _currentPageEntries[index],
+                        entry: currentPageEntries[index],
                         width: DirectoryEntry.width,
                         height: DirectoryEntry.height,
                       );
