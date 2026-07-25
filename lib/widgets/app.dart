@@ -4,6 +4,18 @@ import 'package:better_thermal/widgets/ftp/fpt_screen.dart';
 import 'package:better_thermal/widgets/live/live_stream.dart';
 import 'package:flutter/material.dart';
 
+class AppNavigationItem {
+  final String label;
+  final IconData icon;
+  final Widget screen;
+
+  const AppNavigationItem({
+    required this.label,
+    required this.icon,
+    required this.screen,
+  });
+}
+
 class AppScreen extends StatefulWidget {
   const AppScreen({super.key});
 
@@ -19,6 +31,19 @@ class _AppScreenState extends State<AppScreen> {
     width: 400,
     height: 300,
   );
+
+  late final List<AppNavigationItem> _navigationItems = [
+    AppNavigationItem(
+      label: 'Live Stream',
+      icon: Icons.live_tv,
+      screen: LiveStream(liveStreamService: _liveStreamService),
+    ),
+    AppNavigationItem(
+      label: 'Saved Images',
+      icon: Icons.image,
+      screen: FtpScreen(ftpService: _ftpService),
+    ),
+  ];
 
   int currentPageIndex = 0;
 
@@ -36,9 +61,7 @@ class _AppScreenState extends State<AppScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(currentPageIndex == 0 ? 'Live Stream' : 'Saved Images'),
-      ),
+      appBar: AppBar(title: Text(_navigationItems[currentPageIndex].label)),
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
           setState(() {
@@ -46,20 +69,18 @@ class _AppScreenState extends State<AppScreen> {
           });
         },
         selectedIndex: currentPageIndex,
-        destinations: const <Widget>[
-          NavigationDestination(
-            icon: Icon(Icons.live_tv),
-            label: 'Live Stream',
-          ),
-          NavigationDestination(icon: Icon(Icons.image), label: 'Saved Images'),
-        ],
+        destinations: _navigationItems
+            .map(
+              (item) => NavigationDestination(
+                icon: Icon(item.icon),
+                label: item.label,
+              ),
+            )
+            .toList(),
       ),
       body: IndexedStack(
         index: currentPageIndex,
-        children: <Widget>[
-          LiveStream(liveStreamService: _liveStreamService),
-          FtpScreen(ftpService: _ftpService),
-        ],
+        children: _navigationItems.map((item) => item.screen).toList(),
       ),
     );
   }
