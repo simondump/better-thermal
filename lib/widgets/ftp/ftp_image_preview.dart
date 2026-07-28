@@ -116,7 +116,10 @@ class _FtpImagePreviewState extends State<FtpImagePreview> {
       return const Center(child: Icon(Icons.broken_image));
     }
 
-    return RawImage(image: _image, fit: BoxFit.contain);
+    return ClipRRect(
+      borderRadius: BorderRadiusGeometry.circular(2.5),
+      child: RawImage(image: _image, fit: BoxFit.contain),
+    );
   }
 
   @override
