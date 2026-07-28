@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:image/image.dart' as img;
 
 class LiveImageCanvas extends StatefulWidget {
   final LiveStreamService liveStreamService;
@@ -9,32 +11,56 @@ class LiveImageCanvas extends StatefulWidget {
   const LiveImageCanvas({super.key, required this.liveStreamService});
 
   @override
-  State<LiveImageCanvas> createState() =>
-      _LiveImageCanvasState(liveStreamService: liveStreamService);
+  LiveImageCanvasState createState() =>
+      LiveImageCanvasState(liveStreamService: liveStreamService);
 }
 
-class _LiveImageCanvasState extends State<LiveImageCanvas> {
+class LiveImageCanvasState extends State<LiveImageCanvas> {
   final LiveStreamService _liveStreamService;
 
   ui.Image? _latestFrame;
+  Uint8List? _latestFrameBytes;
+  StreamSubscription<Uint8List>? _frameSubscription;
 
-  _LiveImageCanvasState({required this._liveStreamService});
+  LiveImageCanvasState({required this._liveStreamService});
 
   @override
   void initState() {
     super.initState();
 
-    _liveStreamService.frameStream.listen((Uint8List rgbaFrame) {
+    _frameSubscription = _liveStreamService.frameStream.listen((
+      Uint8List rgbaFrame,
+    ) {
       _decodeAndPublishFrame(rgbaFrame);
     });
   }
 
   @override
   void dispose() {
+    _frameSubscription?.cancel();
+    _latestFrame?.dispose();
     super.dispose();
   }
 
+  Uint8List? getCurrentFrameJpeg() {
+    final rgbaFrame = _latestFrameBytes;
+    if (rgbaFrame == null) {
+      return null;
+    }
+
+    final image = img.Image.fromBytes(
+      width: _liveStreamService.width,
+      height: _liveStreamService.height,
+      bytes: rgbaFrame.buffer,
+      numChannels: 4,
+    );
+
+    return Uint8List.fromList(img.encodeJpg(image));
+  }
+
   void _decodeAndPublishFrame(Uint8List rgbaFrame) {
+    _latestFrameBytes = rgbaFrame;
+
     ui.decodeImageFromPixels(
       rgbaFrame,
       _liveStreamService.width,
