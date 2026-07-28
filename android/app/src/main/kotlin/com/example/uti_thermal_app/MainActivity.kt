@@ -1,4 +1,4 @@
-package com.example.better_thermal
+package io.reinisch.betterthermal
 
 import io.flutter.embedding.android.FlutterActivity
 
