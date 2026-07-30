@@ -1,0 +1,61 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build APK
+        run: flutter build apk --release
+      
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: better-thermal-android
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  build-exe:
+    runs-on: windows-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+      
+      - name: Get dependencies
+        run: flutter pub get
+
+      
+      - name: Build Windows EXE
+        run: flutter build windows --release
+      
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: better-thermal-win
+          path: build/windows/x64/runner/Release/better_thermal.exe
