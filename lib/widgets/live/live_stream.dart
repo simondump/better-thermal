@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
 import 'package:better_thermal/widgets/live/connect_button.dart';
 import 'package:better_thermal/widgets/live/live_image.dart';
-import 'package:cross_file/cross_file.dart';
 import 'package:share_plus/share_plus.dart';
 
 class LiveStream extends StatefulWidget {
@@ -52,7 +51,7 @@ class _LiveStreamState extends State<LiveStream> {
       appBar: AppBar(),
       body: Center(
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.only(left: 8, right: 8),
           margin: const EdgeInsets.only(bottom: 64),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -74,7 +73,6 @@ class _LiveStreamState extends State<LiveStream> {
                   );
                 },
               ),
-
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LiveImageCanvas(
