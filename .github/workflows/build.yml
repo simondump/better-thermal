@@ -6,6 +6,7 @@ on:
 
 jobs:
   build-apk:
+    name: Build Android APK
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
@@ -36,6 +37,7 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
 
   build-exe:
+    name: Build Windows Executable
     runs-on: windows-latest
     steps:
       - name: Clone repository
@@ -59,3 +61,4 @@ jobs:
         with:
           name: better-thermal-win
           path: build/windows/x64/runner/Release/better_thermal.exe
+
