@@ -37,7 +37,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          version=$(sed -nE 's/^version: ([0-9]+\.[0-9]+\.[0-9]+)(\+[0-9]+)?$/\1/p' pubspec.yaml)
+          version="${GITHUB_REF_NAME#v}"
           build_number=$(git tag --list | sed '/^$/d' | wc -l | tr -d ' ')
           if [ "$build_number" -lt 1 ]; then build_number=1; fi
           filename="better-thermal-v${version}+${build_number}.apk"
@@ -79,7 +79,7 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          $version = (Select-String -Path pubspec.yaml -Pattern '^version: ([0-9]+\.[0-9]+\.[0-9]+)(\+[0-9]+)?$').Matches.Groups[1].Value
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
           $buildNumber = @(git tag --list | Where-Object { $_.Trim() -ne '' }).Count
           if ($buildNumber -lt 1) { $buildNumber = 1 }
           $filename = "better-thermal-v$version+$buildNumber.exe"
