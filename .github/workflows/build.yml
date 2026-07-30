@@ -40,7 +40,7 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           build_number=$(git tag --list | sed '/^$/d' | wc -l | tr -d ' ')
           if [ "$build_number" -lt 1 ]; then build_number=1; fi
-          filename="better-thermal-v${version}+${build_number}.apk"
+          filename="better-thermal-v${version}.${build_number}.apk"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "build_number=$build_number" >> "$GITHUB_OUTPUT"
           echo "filename=$filename" >> "$GITHUB_OUTPUT"
@@ -82,7 +82,7 @@ jobs:
           $version = $env:GITHUB_REF_NAME -replace '^v', ''
           $buildNumber = @(git tag --list | Where-Object { $_.Trim() -ne '' }).Count
           if ($buildNumber -lt 1) { $buildNumber = 1 }
-          $filename = "better-thermal-v$version+$buildNumber.exe"
+          $filename = "better-thermal-v$version.$buildNumber.exe"
           "version=$version" >> $env:GITHUB_OUTPUT
           "build_number=$buildNumber" >> $env:GITHUB_OUTPUT
           "filename=$filename" >> $env:GITHUB_OUTPUT
