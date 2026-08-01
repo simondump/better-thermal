@@ -1,0 +1,134 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          build_number=$(git tag --list | sed '/^$/d' | wc -l | tr -d ' ')
+          if [ "$build_number" -lt 1 ]; then build_number=1; fi
+          filename="better-thermal-v${version}.apk"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "build_number=$build_number" >> "$GITHUB_OUTPUT"
+          echo "filename=$filename" >> "$GITHUB_OUTPUT"
+
+      - name: Build APK
+        run: flutter build apk --release --build-name "${{ steps.version.outputs.version }}" --build-number "${{ steps.version.outputs.build_number }}"
+
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/${{ steps.version.outputs.filename }}"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.version.outputs.filename }}
+          path: build/app/outputs/flutter-apk/${{ steps.version.outputs.filename }}
+
+  build-exe:
+    name: Build Windows Executable
+    runs-on: windows-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Determine version
+        id: version
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          $buildNumber = @(git tag --list | Where-Object { $_.Trim() -ne '' }).Count
+          if ($buildNumber -lt 1) { $buildNumber = 1 }
+          $filename = "better-thermal-v$version.exe"
+          $packageFilename = "better-thermal-v$version-windows.zip"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "build_number=$buildNumber" >> $env:GITHUB_OUTPUT
+          "filename=$filename" >> $env:GITHUB_OUTPUT
+          "package_filename=$packageFilename" >> $env:GITHUB_OUTPUT
+
+      - name: Build Windows EXE
+        run: flutter build windows --release --build-name "${{ steps.version.outputs.version }}" --build-number "${{ steps.version.outputs.build_number }}"
+
+      - name: Rename Windows executable
+        run: Move-Item build/windows/x64/runner/Release/better_thermal.exe build/windows/x64/runner/Release/${{ steps.version.outputs.filename }}
+
+      - name: Package Windows application
+        shell: pwsh
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath build/windows/x64/runner/${{ steps.version.outputs.package_filename }}
+
+      - name: Upload Windows package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.version.outputs.package_filename }}
+          path: build/windows/x64/runner/${{ steps.version.outputs.package_filename }}
+
+  publish-release:
+    name: Publish GitHub Release
+    needs:
+      - build-apk
+      - build-exe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v7
+        with:
+          pattern: better-thermal-v*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Extract changes
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body: ${{ steps.changelog.outputs.changes }}
+          files: release-assets/*
