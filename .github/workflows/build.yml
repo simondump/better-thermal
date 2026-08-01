@@ -83,9 +83,11 @@ jobs:
           $buildNumber = @(git tag --list | Where-Object { $_.Trim() -ne '' }).Count
           if ($buildNumber -lt 1) { $buildNumber = 1 }
           $filename = "better-thermal-v$version.exe"
+          $packageFilename = "better-thermal-v$version-windows.zip"
           "version=$version" >> $env:GITHUB_OUTPUT
           "build_number=$buildNumber" >> $env:GITHUB_OUTPUT
           "filename=$filename" >> $env:GITHUB_OUTPUT
+          "package_filename=$packageFilename" >> $env:GITHUB_OUTPUT
 
       - name: Build Windows EXE
         run: flutter build windows --release --build-name "${{ steps.version.outputs.version }}" --build-number "${{ steps.version.outputs.build_number }}"
@@ -93,11 +95,15 @@ jobs:
       - name: Rename Windows executable
         run: Move-Item build/windows/x64/runner/Release/better_thermal.exe build/windows/x64/runner/Release/${{ steps.version.outputs.filename }}
 
-      - name: Upload EXE artifact
+      - name: Package Windows application
+        shell: pwsh
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath build/windows/x64/runner/${{ steps.version.outputs.package_filename }}
+
+      - name: Upload Windows package artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.version.outputs.filename }}
-          path: build/windows/x64/runner/Release/${{ steps.version.outputs.filename }}
+          name: ${{ steps.version.outputs.package_filename }}
+          path: build/windows/x64/runner/${{ steps.version.outputs.package_filename }}
 
   publish-release:
     name: Publish GitHub Release
