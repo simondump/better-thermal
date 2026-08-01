@@ -87,7 +87,7 @@ jobs:
           "version=$version" >> $env:GITHUB_OUTPUT
           "build_number=$buildNumber" >> $env:GITHUB_OUTPUT
           "filename=$filename" >> $env:GITHUB_OUTPUT
-          "package_filename=$packageFilename" >> $env:GITHUB_OUTPUTc
+          "package_filename=$packageFilename" >> $env:GITHUB_OUTPUT
 
       - name: Build Windows EXE
         run: flutter build windows --release --build-name "${{ steps.version.outputs.version }}" --build-number "${{ steps.version.outputs.build_number }}"
