@@ -57,6 +57,8 @@ class DirectoryEntryFile {
   late final String modelText;
   late final String resolutionText;
   late final String emissivityText;
+  late final String humidityText;
+  late final String temperatureText;
   late final DateTime createdTime;
 
   DirectoryEntryFile(Uint8List input) {
@@ -145,8 +147,13 @@ class DirectoryEntryFile {
 
     width = int.parse(resolutionParts[0]);
     height = int.parse(resolutionParts[1]);
+
     temperature = take(10);
+    temperatureText = _text(temperature);
+
     humidity = take(10);
+    humidityText = _text(humidity);
+
     manual = take(10);
 
     createdTimeBytes = take(8);

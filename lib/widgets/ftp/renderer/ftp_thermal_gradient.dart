@@ -16,15 +16,15 @@ class FtpThermalGradient extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 4,
       children: [
         Container(
-          height: 12,
+          height: 14,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
             gradient: const LinearGradient(colors: ThermalColorScale.colors),
           ),
         ),
-        const SizedBox(height: 4),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

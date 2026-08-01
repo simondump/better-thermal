@@ -88,45 +88,78 @@ class _FtpImageDetailsState extends State<FtpImageDetails> {
           }
 
           final imageFile = snapshot.data!;
-          return ListView(
+          return Container(
             padding: const EdgeInsets.all(16),
-            children: [
-              SegmentedButton<_ImageMode>(
-                segments: const [
-                  ButtonSegment(
-                    value: _ImageMode.thermal,
-                    label: Text('Thermal'),
+            child: Column(
+              crossAxisAlignment: .start,
+              spacing: 4,
+              children: [
+                Text(
+                  'Metadata',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Column(
+                  spacing: 2,
+                  children: [
+                    _MetadataRow(label: 'File name', value: imageFile.fileName),
+                    _MetadataRow(
+                      label: 'Dimensions',
+                      value: '${imageFile.width} × ${imageFile.height}',
+                    ),
+                    _MetadataRow(
+                      label: 'Created',
+                      value: imageFile.createdTime.toLocal().toString(),
+                    ),
+                    _MetadataRow(label: 'Model', value: imageFile.modelText),
+                    _MetadataRow(
+                      label: 'Humidity',
+                      value: imageFile.humidityText,
+                    ),
+                    _MetadataRow(
+                      label: 'Temperature',
+                      value: imageFile.temperatureText,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Image Preview',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                _buildRepresentation(imageFile),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: .stretch,
+                    mainAxisAlignment: .end,
+                    children: [
+                      SegmentedButton<_ImageMode>(
+                        segments: const [
+                          ButtonSegment(
+                            value: _ImageMode.thermal,
+                            label: Text('Thermal'),
+                          ),
+                          ButtonSegment(
+                            value: _ImageMode.visual,
+                            label: Text('Visual'),
+                          ),
+                          ButtonSegment(
+                            value: _ImageMode.custom,
+                            label: Text('Custom'),
+                          ),
+                        ],
+                        selected: {_mode},
+                        onSelectionChanged: (selection) {
+                          setState(() {
+                            _mode = selection.first;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ),
-                  ButtonSegment(
-                    value: _ImageMode.visual,
-                    label: Text('Visual'),
-                  ),
-                  ButtonSegment(
-                    value: _ImageMode.custom,
-                    label: Text('Custom'),
-                  ),
-                ],
-                selected: {_mode},
-                onSelectionChanged: (selection) {
-                  setState(() {
-                    _mode = selection.first;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildRepresentation(imageFile),
-              const SizedBox(height: 24),
-              _MetadataRow(label: 'File name', value: imageFile.fileName),
-              _MetadataRow(
-                label: 'Dimensions',
-                value: '${imageFile.width} × ${imageFile.height}',
-              ),
-              _MetadataRow(
-                label: 'Created',
-                value: imageFile.createdTime.toLocal().toString(),
-              ),
-              _MetadataRow(label: 'Model', value: imageFile.modelText),
-            ],
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -142,21 +175,15 @@ class _MetadataRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(child: Text(value.isEmpty ? '—' : value)),
-        ],
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(label, style: Theme.of(context).textTheme.titleSmall),
+        ),
+        Expanded(child: Text(value.isEmpty ? '—' : value)),
+      ],
     );
   }
 }
