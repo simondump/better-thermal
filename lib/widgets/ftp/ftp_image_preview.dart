@@ -8,12 +8,14 @@ class FtpImagePreview extends StatefulWidget {
   final DirectoryEntryThumbnail entry;
   final int width;
   final int height;
+  final VoidCallback onSelect;
 
   const FtpImagePreview({
     super.key,
     required this.entry,
     required this.width,
     required this.height,
+    required this.onSelect,
   });
 
   @override
@@ -131,22 +133,29 @@ class _FtpImagePreviewState extends State<FtpImagePreview> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      spacing: 4,
-      children: [
-        Expanded(child: _buildImage()),
-        Text(
-          widget.entry.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 10,
-            fontWeight: .bold,
-          ),
+    return InkWell(
+      onTap: widget.onSelect,
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.all(2),
+        child: Column(
+          spacing: 4,
+          children: [
+            Expanded(child: _buildImage()),
+            Text(
+              widget.entry.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 10,
+                fontWeight: .bold,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:better_thermal/services/ftp_service/directory_entry.dart';
 import 'package:better_thermal/services/ftp_service/ftp_service.dart';
 import 'package:flutter/material.dart';
 
+import 'ftp_image_details.dart';
 import 'ftp_image_preview.dart';
 
 class FtpScreen extends StatefulWidget {
@@ -156,6 +157,16 @@ class _FtpScreenState extends State<FtpScreen> {
                         entry: currentPageEntries[index],
                         width: DirectoryEntry.width,
                         height: DirectoryEntry.height,
+                        onSelect: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => FtpImageDetails(
+                                ftpService: widget.ftpService,
+                                fileName: currentPageEntries[index].name,
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   );
