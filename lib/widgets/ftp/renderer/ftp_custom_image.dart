@@ -1,4 +1,5 @@
 import 'package:better_thermal/services/ftp_service/directory_entry_file.dart';
+import 'package:better_thermal/widgets/ftp/renderer/ftp_thermal_gradient.dart';
 import 'package:flutter/material.dart';
 
 class FtpCustomImage extends StatelessWidget {
@@ -15,17 +16,65 @@ class FtpCustomImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: width / height,
-      child: CustomPaint(
-        painter: _ThermalSamplesPainter(
-          samples: samples,
-          width: width,
-          height: height,
+    final temperatureRange = _temperatureRange(samples, width, height);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (width > 0 && height > 0)
+          AspectRatio(
+            aspectRatio: width / height,
+            child: ClipRRect(
+              borderRadius: BorderRadiusGeometry.circular(4),
+              child: CustomPaint(
+                painter: _ThermalSamplesPainter(
+                  samples: samples,
+                  width: width,
+                  height: height,
+                ),
+              ),
+            ),
+          )
+        else
+          const SizedBox.shrink(),
+        const SizedBox(height: 8),
+        FtpThermalGradient(
+          minimum: temperatureRange?.minimum,
+          maximum: temperatureRange?.maximum,
         ),
-      ),
+      ],
     );
   }
+}
+
+class _TemperatureRange {
+  const _TemperatureRange(this.minimum, this.maximum);
+
+  final double minimum;
+  final double maximum;
+}
+
+_TemperatureRange? _temperatureRange(
+  List<ThermalSample> samples,
+  int width,
+  int height,
+) {
+  if (samples.isEmpty || width <= 0 || height <= 0) return null;
+
+  final count = samples.length < width * height
+      ? samples.length
+      : width * height;
+  var minimum = samples.first.celsius;
+  var maximum = minimum;
+
+  for (var index = 1; index < count; index++) {
+    final value = samples[index].celsius;
+    if (value < minimum) minimum = value;
+    if (value > maximum) maximum = value;
+  }
+
+  return _TemperatureRange(minimum, maximum);
 }
 
 class _ThermalSamplesPainter extends CustomPainter {
@@ -43,16 +92,12 @@ class _ThermalSamplesPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (samples.isEmpty || width <= 0 || height <= 0) return;
 
-    final sampleCount = width * height;
-    final count = samples.length < sampleCount ? samples.length : sampleCount;
-    var minimum = samples.first.celsius;
-    var maximum = minimum;
-
-    for (var index = 1; index < count; index++) {
-      final value = samples[index].celsius;
-      if (value < minimum) minimum = value;
-      if (value > maximum) maximum = value;
-    }
+    final rangeValues = _temperatureRange(samples, width, height)!;
+    final count = samples.length < width * height
+        ? samples.length
+        : width * height;
+    final minimum = rangeValues.minimum;
+    final maximum = rangeValues.maximum;
 
     final range = maximum - minimum;
     final pixelWidth = size.width / width;
@@ -81,18 +126,14 @@ class _ThermalSamplesPainter extends CustomPainter {
   }
 
   Color _colorFor(double value) {
-    const colors = [
-      Color(0xff0000ff),
-      Color(0xff00ffff),
-      Color(0xff00ff00),
-      Color(0xffffff00),
-      Color(0xffff0000),
-    ];
-
-    final scaled = value * (colors.length - 1);
-    final lower = scaled.floor().clamp(0, colors.length - 2);
+    final scaled = value * (ThermalColorScale.colors.length - 1);
+    final lower = scaled.floor().clamp(0, ThermalColorScale.colors.length - 2);
     final upper = lower + 1;
-    return Color.lerp(colors[lower], colors[upper], scaled - lower)!;
+    return Color.lerp(
+      ThermalColorScale.colors[lower],
+      ThermalColorScale.colors[upper],
+      scaled - lower,
+    )!;
   }
 
   @override

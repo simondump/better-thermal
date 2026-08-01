@@ -18,14 +18,15 @@ class FtpThermalImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: width / height,
-      child: Image.memory(
-        image,
-        fit: BoxFit.contain,
-        errorBuilder: (_, error, stackTrace) => const Center(
-          child: Icon(Icons.broken_image, size: 48),
+      child: ClipRRect(
+        borderRadius: BorderRadiusGeometry.circular(4),
+        child: Image.memory(
+          image,
+          fit: BoxFit.contain,
+          errorBuilder: (_, error, stackTrace) =>
+              const Center(child: Icon(Icons.broken_image, size: 48)),
         ),
       ),
     );
   }
 }
-
