@@ -1,8 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:better_thermal/services/ftp_service/directory_entry_file.dart';
 import 'package:better_thermal/widgets/ftp/renderer/ftp_thermal_gradient.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
+import 'ftp_image_renderer.dart';
 
-class FtpCustomImage extends StatelessWidget {
+class FtpCustomImage extends FtpImageRenderer {
   const FtpCustomImage({
     super.key,
     required this.samples,
@@ -13,6 +17,28 @@ class FtpCustomImage extends StatelessWidget {
   final List<ThermalSample> samples;
   final int width;
   final int height;
+
+  @override
+  Uint8List getImageJpeg() {
+    if (width <= 0 || height <= 0) {
+      throw ArgumentError('Image dimensions must be positive');
+    }
+
+    final colors = renderThermalSamples(samples, width, height);
+    final output = img.Image(width: width, height: height);
+    for (var index = 0; index < colors.length; index++) {
+      final color = colors[index];
+      output.setPixelRgb(
+        index % width,
+        index ~/ width,
+        (color.r * 255).round().clamp(0, 255),
+        (color.g * 255).round().clamp(0, 255),
+        (color.b * 255).round().clamp(0, 255),
+      );
+    }
+
+    return Uint8List.fromList(img.encodeJpg(output));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +72,44 @@ class FtpCustomImage extends StatelessWidget {
       ],
     );
   }
+}
+
+List<Color> renderThermalSamples(
+  List<ThermalSample> samples,
+  int width,
+  int height,
+) {
+  if (samples.isEmpty || width <= 0 || height <= 0) return const [];
+
+  final count = samples.length < width * height
+      ? samples.length
+      : width * height;
+  var minimum = samples.first.celsius;
+  var maximum = minimum;
+  for (var index = 1; index < count; index++) {
+    final value = samples[index].celsius;
+    if (value < minimum) minimum = value;
+    if (value > maximum) maximum = value;
+  }
+
+  final difference = maximum - minimum;
+  return [
+    for (var index = 0; index < count; index++)
+      _colorForTemperature(samples[index].celsius, minimum, difference),
+  ];
+}
+
+Color _colorForTemperature(double value, double minimum, double difference) {
+  final normalized = difference == 0
+      ? 0.5
+      : ((value - minimum) / difference).clamp(0.0, 1.0);
+  final scaled = normalized * (ThermalColorScale.colors.length - 1);
+  final lower = scaled.floor().clamp(0, ThermalColorScale.colors.length - 2);
+  return Color.lerp(
+    ThermalColorScale.colors[lower],
+    ThermalColorScale.colors[lower + 1],
+    scaled - lower,
+  )!;
 }
 
 class _TemperatureRange {
@@ -90,26 +154,15 @@ class _ThermalSamplesPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (samples.isEmpty || width <= 0 || height <= 0) return;
+    final colors = renderThermalSamples(samples, width, height);
+    if (colors.isEmpty) return;
 
-    final rangeValues = _temperatureRange(samples, width, height)!;
-    final count = samples.length < width * height
-        ? samples.length
-        : width * height;
-    final minimum = rangeValues.minimum;
-    final maximum = rangeValues.maximum;
-
-    final range = maximum - minimum;
     final pixelWidth = size.width / width;
     final pixelHeight = size.height / height;
     final paint = Paint();
 
-    for (var index = 0; index < count; index++) {
-      final value = samples[index].celsius;
-      final normalized = range == 0
-          ? 0.5
-          : ((value - minimum) / range).clamp(0.0, 1.0);
-      paint.color = _colorFor(normalized);
+    for (var index = 0; index < colors.length; index++) {
+      paint.color = colors[index];
 
       final x = index % width;
       final y = index ~/ width;
@@ -123,17 +176,6 @@ class _ThermalSamplesPainter extends CustomPainter {
         paint,
       );
     }
-  }
-
-  Color _colorFor(double value) {
-    final scaled = value * (ThermalColorScale.colors.length - 1);
-    final lower = scaled.floor().clamp(0, ThermalColorScale.colors.length - 2);
-    final upper = lower + 1;
-    return Color.lerp(
-      ThermalColorScale.colors[lower],
-      ThermalColorScale.colors[upper],
-      scaled - lower,
-    )!;
   }
 
   @override

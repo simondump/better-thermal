@@ -1,7 +1,11 @@
+import 'package:cross_file/cross_file.dart';
 import 'package:better_thermal/services/ftp_service/directory_entry_file.dart';
 import 'package:better_thermal/services/ftp_service/ftp_service.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'renderer/ftp_custom_image.dart';
+import 'renderer/ftp_image_renderer.dart';
 import 'renderer/ftp_thermal_image.dart';
 import 'renderer/ftp_visual_image.dart';
 
@@ -24,6 +28,7 @@ class FtpImageDetails extends StatefulWidget {
 class _FtpImageDetailsState extends State<FtpImageDetails> {
   late Future<DirectoryEntryFile> _imageFuture;
   var _mode = _ImageMode.thermal;
+  var _isSharing = false;
 
   @override
   void initState() {
@@ -37,7 +42,7 @@ class _FtpImageDetailsState extends State<FtpImageDetails> {
     });
   }
 
-  Widget _buildRepresentation(DirectoryEntryFile imageFile) {
+  FtpImageRenderer _buildRepresentation(DirectoryEntryFile imageFile) {
     return switch (_mode) {
       _ImageMode.thermal => FtpThermalImage(
         image: imageFile.thermalImage,
@@ -55,6 +60,40 @@ class _FtpImageDetailsState extends State<FtpImageDetails> {
         height: imageFile.height,
       ),
     };
+  }
+
+  Future<void> _shareImage(FtpImageRenderer representation) async {
+    if (!mounted) return;
+
+    setState(() {
+      _isSharing = true;
+    });
+
+    try {
+      final jpegBytes = representation.getImageJpeg();
+      final timestamp = DateFormat('yyyyMMddHHmmss').format(DateTime.now());
+      final file = XFile.fromData(
+        jpegBytes,
+        name: '$timestamp.jpg',
+        mimeType: 'image/jpeg',
+      );
+
+      await SharePlus.instance.share(
+        ShareParams(files: [file], subject: 'Thermal camera image'),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to export image: $error')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSharing = false;
+        });
+      }
+    }
   }
 
   @override
@@ -88,18 +127,15 @@ class _FtpImageDetailsState extends State<FtpImageDetails> {
           }
 
           final imageFile = snapshot.data!;
+          final representation = _buildRepresentation(imageFile);
           return Container(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: .start,
-              spacing: 4,
+              spacing: 2,
               children: [
-                Text(
-                  'Metadata',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
                 Column(
-                  spacing: 2,
+                  spacing: 1,
                   children: [
                     _MetadataRow(label: 'File name', value: imageFile.fileName),
                     _MetadataRow(
@@ -119,19 +155,27 @@ class _FtpImageDetailsState extends State<FtpImageDetails> {
                       label: 'Temperature',
                       value: imageFile.temperatureText,
                     ),
+                    _MetadataRow(
+                      label: 'Emissivity',
+                      value: imageFile.emissivityText,
+                    ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Image Preview',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                _buildRepresentation(imageFile),
+                const SizedBox(height: 8),
+                representation,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: .stretch,
                     mainAxisAlignment: .end,
                     children: [
+                      ElevatedButton.icon(
+                        onPressed: _isSharing
+                            ? null
+                            : () => _shareImage(representation),
+                        icon: const Icon(Icons.ios_share),
+                        label: Text(_isSharing ? 'Exporting…' : 'Export image'),
+                      ),
+                      const SizedBox(height: 12),
                       SegmentedButton<_ImageMode>(
                         segments: const [
                           ButtonSegment(

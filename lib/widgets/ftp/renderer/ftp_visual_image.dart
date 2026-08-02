@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
+import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart';
+import 'ftp_image_renderer.dart';
 
-class FtpVisualImage extends StatelessWidget {
+class FtpVisualImage extends FtpImageRenderer {
   const FtpVisualImage({
     super.key,
     required this.image,
@@ -13,6 +15,16 @@ class FtpVisualImage extends StatelessWidget {
   final Uint8List image;
   final int width;
   final int height;
+
+  @override
+  Uint8List getImageJpeg() {
+    final decoded = img.decodeImage(image);
+    if (decoded == null) {
+      throw const FormatException('Unable to decode visual image');
+    }
+
+    return Uint8List.fromList(img.encodeJpg(decoded));
+  }
 
   @override
   Widget build(BuildContext context) {
