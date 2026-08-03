@@ -44,6 +44,17 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "build_number=$build_number" >> "$GITHUB_OUTPUT"
           echo "filename=$filename" >> "$GITHUB_OUTPUT"
+          
+      - name: Set up keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > upload-keystore.jks
+
+      - name: Generate keystore properties
+        run: |
+          echo "storeFile=upload-keystore.jks" > android/key.properties
+          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=upload" >> android/key.properties
 
       - name: Build APK
         run: flutter build apk --release --build-name "${{ steps.version.outputs.version }}" --build-number "${{ steps.version.outputs.build_number }}"
