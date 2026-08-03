@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:better_thermal/services/live_stream_service/live_stream_service.dart';
 import 'package:better_thermal/widgets/live/connect_button.dart';
 import 'package:better_thermal/widgets/live/live_image.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
 class LiveStream extends StatefulWidget {
@@ -32,9 +33,10 @@ class _LiveStreamState extends State<LiveStream> {
       return;
     }
 
+    final timestamp = DateFormat('yyyyMMddHHmmss').format(DateTime.now());
     final file = XFile.fromData(
       jpegBytes,
-      name: 'thermal-image.jpg',
+      name: '$timestamp.jpg',
       mimeType: 'image/jpeg',
     );
 
