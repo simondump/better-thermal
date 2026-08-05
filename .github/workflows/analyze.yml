@@ -1,0 +1,26 @@
+name: Analyze Flutter Project
+
+on: push
+
+jobs:
+  analyze:
+    name: Analyze Flutter project
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+  
+      - name: Get dependencies
+        run: flutter pub get
+  
+      - name: Analyze
+        run: flutter analyze
